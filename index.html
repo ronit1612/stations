@@ -571,7 +571,7 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
 const PROGRAM_START=new Date('2026-04-06T00:00:00');
 const DELOAD_WEEKS=[8,16,24];
 const KEY='stations_v10',DKEY='stations_v10_draft',V3KEY='stations_v3';
-const PKEY='stations_protein',VKEY='stations_vouchers',WKEY='stations_wrist';
+const PKEY='stations_protein',VKEY='stations_vouchers',WKEY='stations_wrist',WKKEY='stations_curweek';
 const PROTEIN_TARGET=126;
 
 // ═══════════════════ SVG ICONS ═══════════════════
@@ -786,9 +786,11 @@ const ldV=()=>{try{return JSON.parse(localStorage.getItem(VKEY))||{used:[]}}catc
 const svV=v=>localStorage.setItem(VKEY,JSON.stringify(v));
 const ldW=()=>{try{return JSON.parse(localStorage.getItem(WKEY))||{}}catch{return{}}};
 const svW=w=>localStorage.setItem(WKEY,JSON.stringify(w));
+const ldCW=()=>{try{const v=JSON.parse(localStorage.getItem(WKKEY));return(v&&v.week>=1&&v.week<=24)?v.week:1;}catch{return 1;}};
+const svCW=w=>localStorage.setItem(WKKEY,JSON.stringify({week:Math.min(Math.max(1,w),24)}));
 
 // ═══════════════════ PROGRAM MATH ═══════════════════
-function getCurWeek(){const d=Date.now()-PROGRAM_START.getTime();return Math.min(Math.max(Math.floor(d/(7*864e5))+1,1),24)}
+function getCurWeek(){return ldCW()}
 function getPhase(w){return w<=8?1:w<=16?2:3}
 function getPIdx(w){return getPhase(w)-1}
 function isDeload(w){return DELOAD_WEEKS.includes(w)}
@@ -820,6 +822,31 @@ function getHistory(did,nm){
   return out;
 }
 function dlSets(s){return s>=5?Math.ceil(s*.65):s>=3?s-1:s}
+
+// ═══════════════════ WEEK PROGRESSION ═══════════════════
+function sessionsThisWeek(){
+  const cw=getCurWeek(),d=ld();
+  let count=0;
+  DAYS.forEach((day,di)=>{
+    const ds=getDayDate(cw,di);
+    if((d[day.id]||[]).some(s=>s.date?.slice(0,10)===ds))count++;
+  });
+  return count;
+}
+function advanceWeek(){
+  const cw=getCurWeek();
+  if(cw>=24)return;
+  const nw=cw+1;
+  svCW(nw);
+  S.week=nw;
+  S.day=0;
+  S.deload=isDeload(nw);
+  updDeloadBtn();
+  renderPilgrimageMap();
+  renderTabs();
+  renderDay();
+  if(navigator.vibrate)navigator.vibrate([40,20,80]);
+}
 function calcStreak(){
   const d=ld();let s=0;const t=new Date();t.setHours(0,0,0,0);
   for(let i=0;i<60;i++){
@@ -1100,6 +1127,19 @@ function renderDay(){
   </div>`;
 
   if(dl)h+=`<div class="dl-banner"><span style="color:#E9C349;display:flex;align-items:center">${IC.zap}</span><div><div style="font-size:11px;font-weight:700;color:#E9C349">DELOAD WEEK ${S.week}</div><div style="font-size:10px;color:rgba(206,195,206,0.58);margin-top:2px">50% load · Sets −1/3 · RPE 4-5 · Drill only in classes</div></div></div>`;
+
+  // ── ADVANCE BANNER ─────────────────────────────────────
+  const _stw=sessionsThisWeek();
+  const _canAdvance=!isFuture&&!isPast&&S.week<24&&_stw>=3;
+  if(_canAdvance){
+    h+=`<div style="background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.28);border-radius:6px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <div>
+        <div style="font-size:9px;font-weight:700;color:#D4AF37;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:5px"><span>${IC.cross}</span>${_stw} Station${_stw!==1?'s':''} Complete This Week</div>
+        <div style="font-size:11px;color:rgba(206,195,206,0.62);line-height:1.4">Week ${S.week} is done. Begin the next when you're ready.</div>
+      </div>
+      <button onclick="advanceWeek()" style="flex-shrink:0;padding:11px 15px;border-radius:6px;border:1px solid rgba(212,175,55,0.45);background:rgba(212,175,55,0.12);color:#D4AF37;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.8px;white-space:nowrap;box-shadow:0 0 18px rgba(212,175,55,0.1)">Wk ${S.week+1} →</button>
+    </div>`;
+  }
   if(day.cns)h+=`<div class="cns-note"><span style="flex-shrink:0;margin-top:1px;color:rgba(240,112,112,0.88)">${IC.alert}</span><span><strong style="display:block;font-size:10px;font-weight:700;margin-bottom:3px">CNS NOTE</strong>Leave 1–2 reps in the tank on all compounds. Fresh CNS required for 8pm gymnastics.</span></div>`;
 
   // Daily timeline
@@ -1680,11 +1720,11 @@ document.addEventListener('visibilitychange',()=>{
 // ═══════════════════ INIT ═══════════════════
 function init(){
   migrateV3();
-  S.week=getCurWeek();
+  S.week=getCurWeek(); // reads localStorage — defaults to 1 on first load
   const dow=new Date().getDay();
   S.day=dow===0?6:dow-1;
   if(isDeload(S.week))S.deload=true;
-  reqWakeLock(); // keep screen on during rest periods
+  reqWakeLock();
   // Show Phase Dashboard immediately — Cathedral Doors overlays it at z-index 1000
   showPhase();
   updProtRing();
