@@ -93,7 +93,7 @@ body::before{
 /* ═══════════════════ BOTTOM NAV ═══════════════════ */
 #bottomNav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,10,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(201,160,220,0.1);display:flex;align-items:center;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom));transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:50}
 #bottomNav.hidden{transform:translateY(100%)}
-.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 18px;border-radius:6px;cursor:pointer;transition:all .22s;color:rgba(150,142,152,0.65);font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border:1px solid transparent;min-width:60px;-webkit-user-select:none;user-select:none}
+.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 10px;border-radius:6px;cursor:pointer;transition:all .22s;color:rgba(150,142,152,0.65);font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border:1px solid transparent;min-width:50px;-webkit-user-select:none;user-select:none}
 .bnav-btn:active{transform:scale(.9)}
 .bnav-btn.on{color:#C9A0DC;background:rgba(201,160,220,0.08);border-color:rgba(201,160,220,0.18)}
 .bnav-btn svg{width:20px;height:20px;stroke-width:1.5;transition:all .22s}
@@ -151,7 +151,7 @@ body::before{
 /* ═══════════════════ MODAL ═══════════════════ */
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(14px);z-index:200;display:none;align-items:flex-end;justify-content:center}
 #modal.open{display:flex}
-.m-sheet{background:#09090d;border:1px solid rgba(201,160,220,0.12);border-radius:14px 14px 0 0;width:100%;max-width:500px;max-height:85dvh;overflow-y:auto;padding:10px 18px 36px;animation:sUp .35s cubic-bezier(.2,.8,.2,1)}
+.m-sheet{background:#09090d;border:1px solid rgba(201,160,220,0.12);border-radius:14px 14px 0 0;width:100%;max-width:500px;max-height:85dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 18px 36px;animation:sUp .35s cubic-bezier(.2,.8,.2,1)}
 @keyframes sUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .m-handle{width:36px;height:4px;background:rgba(201,160,220,0.18);border-radius:4px;margin:0 auto 18px}
 .hist-ent{padding:13px 0;border-bottom:1px solid rgba(201,160,220,0.06)}
@@ -413,7 +413,8 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
     <div style="padding:18px 0 14px;display:flex;justify-content:space-between;align-items:center">
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:#C9A0DC" class="text-glow-ac">STATIONS</div>
       <div style="display:flex;align-items:center;gap:10px">
-        <div id="phProtRingWrap" onclick="showProteinModal()" style="cursor:pointer">
+        <div id="phProtRingWrap" onclick="showProteinModal()" style="cursor:pointer;position:relative">
+          <div id="phProtGlow" style="position:absolute;inset:-2px;border-radius:50%;pointer-events:none;transition:box-shadow .4s"></div>
           <svg id="phProtRing" width="36" height="36" viewBox="0 0 36 36"><circle class="pring-bg" cx="18" cy="18" r="14"/><circle class="pring-fg" id="phPRingFg" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"/><text x="18" y="22" text-anchor="middle" font-family="DM Sans" font-size="8" font-weight="700" fill="#C9A0DC" id="phProtTxt">0g</text></svg>
         </div>
         <div style="display:flex;align-items:center;gap:5px;background:rgba(201,160,220,0.08);border:1px solid rgba(201,160,220,0.14);border-radius:6px;padding:5px 11px;font-size:11px;font-weight:700;color:#C9A0DC">
@@ -447,6 +448,7 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
       <div class="hdr-wordmark" style="font-family:'Cormorant Garamond',serif;font-size:clamp(14px,4.5vw,20px);font-style:italic;letter-spacing:clamp(0px,0.28vw,2px);white-space:nowrap;flex-shrink:1;min-width:0">S<span style="color:#C9A0DC">T</span>ATIONS</div>
       <div style="display:flex;align-items:center;gap:8px">
         <div onclick="showProteinModal()" style="cursor:pointer;position:relative">
+          <div id="hProtGlow" style="position:absolute;inset:-2px;border-radius:50%;pointer-events:none;transition:box-shadow .4s"></div>
           <svg id="hProtRing" width="40" height="40" viewBox="0 0 40 40">
             <circle class="pring-bg" cx="20" cy="20" r="16"/>
             <circle class="pring-fg" id="hPRingFg" cx="20" cy="20" r="16" stroke-dasharray="100.53" stroke-dashoffset="100.53"/>
@@ -495,6 +497,10 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
   <div class="bnav-btn" id="bnToday" onclick="navTo('today')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
     Today
+  </div>
+  <div class="bnav-btn" id="bnClasses" onclick="navTo('classes')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="4" r="1.5"/><path d="M8.5 8.5L6 14l4 2-1.5 5M15.5 8.5L18 14l-4 2 1.5 5M8 8.5h8"/></svg>
+    Classes
   </div>
   <div class="bnav-btn" id="bnRecovery" onclick="navTo('recovery')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
@@ -571,7 +577,7 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
 const PROGRAM_START=new Date('2026-04-06T00:00:00');
 const DELOAD_WEEKS=[8,16,24];
 const KEY='stations_v10',DKEY='stations_v10_draft',V3KEY='stations_v3';
-const PKEY='stations_protein',VKEY='stations_vouchers',WKEY='stations_wrist',WKKEY='stations_curweek';
+const PKEY='stations_protein',VKEY='stations_vouchers',WKEY='stations_wrist',WKKEY='stations_curweek',CLKEY='stations_classes';
 const PROTEIN_TARGET=126;
 
 // ═══════════════════ SVG ICONS ═══════════════════
@@ -634,9 +640,9 @@ const QQ=[
 
 // ═══════════════════ EXERCISE DATA ═══════════════════
 const DAYS=[
-{id:'mon',tab:'Mon',label:'Push',sub:'Chest · Triceps · Shoulders',gym:true,cls:'Gymnastics 8pm — Coach Milos',cns:false,
+{id:'d1',tab:'Push',label:'Push',sub:'Chest · Triceps · Shoulders',gym:true,cls:'Chest · Triceps · Shoulders',cns:false,
 warmup:'3 min incline walk (10%, 3.5) → Band Pull-Aparts ×15, Scap Push-Ups ×10 → Bench ramp: bar×10, 50%×5, 70%×3',
-tl:[{t:'12:00',lbl:'Gym',icon:'gym'},{t:'20:00',lbl:'Gymnastics',icon:'gym2'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
+tl:[{t:'12:00',lbl:'Gym',icon:'gym'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
 ex:[
 {n:'Barbell Bench Press',c:1,pri:null,p:[{s:4,r:'4–6'},{s:4,r:'3–5'},{s:5,r:'3–5'}]},
 {n:'Incline DB Press',c:1,pri:null,p:[{s:3,r:'8–10'},{s:4,r:'8–10'},{s:5,r:'8–10'}]},
@@ -654,7 +660,7 @@ skin:{pm:'Glycolic',groom:null,
 s2:{face:['Kose oil (DRY, 60s)','Anua BHA wash (wet, 30-60s)','Anua toner','Glycolic Toning Solution (1–2 min)','Beef Tallow'],
 body:['SA wash (1–2 min)','Glycolic on PIH + folliculitis zones','Curederm darkest spots','CeraVe Cream']}}},
 
-{id:'tue',tab:'Tue',label:'Pull + Calves',sub:'Back · Biceps · Calves',gym:true,cls:'Free evening — Upper body groom',cns:false,
+{id:'d2',tab:'Pull',label:'Pull + Calves',sub:'Back · Biceps · Calves',gym:true,cls:'Free evening — Upper body groom',cns:false,
 warmup:'Dead hang 30s → Band Lat Pulldown ×15, Band Face Pulls ×12 → Row ramp: light×8, mod×5',
 tl:[{t:'12:00',lbl:'Gym',icon:'gym'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
 ex:[
@@ -678,9 +684,9 @@ s2:{face:['Kose oil (DRY, 60s)','Anua BHA wash','Anua toner','Glycolic Toning So
 body:['SA wash (1–2 min)','Azelaic Acid 10% on PIH + folliculitis','Curederm darkest spots','CeraVe Cream']},
 groomSteps:['UPPER BODY GROOM','Chest, back, abs, happy trail edges','WITH grain, one pass, light pressure','Meridian Ball Trimmer — no guard, alcohol-clean first','Post-groom: Azelaic acid on ALL groomed zones (never glycolic)','Never glycolic on freshly groomed skin']}},
 
-{id:'wed',tab:'Wed',label:'Legs',sub:'Glute · Posterior Chain',gym:true,cls:'Gymnastics 8pm — Coach Milos',cns:true,
+{id:'d3',tab:'Legs',label:'Legs',sub:'Glute · Posterior Chain',gym:true,cls:'Glute · Posterior Chain',cns:true,
 warmup:'3 min incline walk → Glute Bridges ×15, BW Squats ×10, Leg Swings ×10/dir → Squat ramp: bar×10, 50%×5, 70%×3',
-tl:[{t:'12:00',lbl:'Gym',icon:'gym'},{t:'20:00',lbl:'Gymnastics',icon:'gym2'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
+tl:[{t:'12:00',lbl:'Gym',icon:'gym'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
 ex:[
 {n:'Barbell Back Squat',c:1,pri:'g',p:[{s:4,r:'4–6'},{s:4,r:'3–5'},{s:5,r:'3–5'}]},
 {n:'Hip Thrust (Machine)',c:1,pri:'g',p:[{s:4,r:'8–10'},{s:4,r:'8–10'},{s:5,r:'6–8'}]},
@@ -699,7 +705,7 @@ skin:{pm:'Glycolic',groom:null,
 s2:{face:['Kose oil (DRY, 60s)','Anua BHA wash','Anua toner','Glycolic Toning Solution','Beef Tallow'],
 body:['SA wash (1–2 min)','Glycolic on PIH + folliculitis','Curederm','CeraVe Cream']}}},
 
-{id:'thu',tab:'Thu',label:'Upper',sub:'OHP · Arms · Calves',gym:true,cls:'Free evening — Lower body groom',cns:false,
+{id:'d4',tab:'Upper',label:'Upper',sub:'OHP · Arms · Calves',gym:true,cls:'Free evening — Lower body groom',cns:false,
 warmup:'3 min incline walk → Band Pull-Aparts ×15, Scap Push-Ups ×10 → OHP ramp: bar×10, 50%×5, 70%×3',
 tl:[{t:'12:00',lbl:'Gym',icon:'gym'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
 ex:[
@@ -723,9 +729,9 @@ s2:{face:['Kose oil (DRY, 60s)','Anua BHA wash','Anua toner','Glycolic Toning So
 body:['SA wash (1–2 min)','Azelaic Acid 10% on PIH + folliculitis','Curederm','CeraVe Cream']},
 groomSteps:['LOWER BODY GROOM','Pubic — Braun WITH grain, guard on','Glutes — Meridian, no guard, strictly WITH grain, lightest pressure','Balls — Meridian, pull skin taut','Post-groom: Azelaic acid on ALL groomed zones','Extra CeraVe on waistband — loose cotton underwear 24-48h','60+ hours before Sunday BJJ']}},
 
-{id:'fri',tab:'Fri',label:'Lower',sub:'Quad · Glute · Double Session',gym:true,cls:'Gymnastics 8pm — Coach Milos',cns:true,
+{id:'d5',tab:'Lower',label:'Lower',sub:'Quad · Glute · Double Session',gym:true,cls:'Quad · Glute Dominant',cns:true,
 warmup:'3 min incline walk → Glute Bridges ×15, Leg Swings ×10/dir, BW Squats ×10 → Squat ramp: bar×10, 50%×5, 70%×3',
-tl:[{t:'12:00',lbl:'Gym',icon:'gym'},{t:'20:00',lbl:'Gymnastics',icon:'gym2'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
+tl:[{t:'12:00',lbl:'Gym',icon:'gym'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
 ex:[
 {n:'Barbell Back Squat',c:1,pri:'g',p:[{s:4,r:'4–6'},{s:4,r:'3–5'},{s:5,r:'3–5'}]},
 {n:'Hack Squat Machine',c:1,pri:null,p:[{s:4,r:'8–10'},{s:4,r:'8–10'},{s:5,r:'6–8'}]},
@@ -743,7 +749,7 @@ skin:{pm:'Glycolic',groom:null,
 s2:{face:['Kose oil (DRY, 60s)','Anua BHA wash','Anua toner','Glycolic Toning Solution','Beef Tallow'],
 body:['SA wash (1–2 min)','Glycolic on PIH + folliculitis','Curederm','CeraVe Cream']}}},
 
-{id:'sat',tab:'Sat',label:'REST',sub:'Deep Flexibility · Recovery',gym:false,cls:'Free — Sauna if using voucher',cns:false,warmup:null,
+{id:'d6',tab:'Rest',label:'REST',sub:'Deep Flexibility · Recovery',gym:false,cls:'Free — Sauna if using voucher',cns:false,warmup:null,
 tl:[{t:'17:00',lbl:'Sauna option',icon:'sauna'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
 ex:[],abs:[],
 skill:{p1:['Scap pull-ups 3×10','High pull-ups 3×3-5','False grip ring hangs 3×15s'],p2:['Scap pull-ups 3×10','High pull-ups 3×5','False grip transitions 3×3'],p3:['False grip kip practice 3×3','Bar muscle-up attempts','Ring support holds 3×20s']},
@@ -753,7 +759,7 @@ skin:{pm:'Azelaic',groom:null,
 s2:{face:['Kose oil (DRY, 60s)','Anua BHA wash','Anua toner','Glycolic Toning Solution','Beef Tallow'],
 body:['SA wash (1–2 min)','Azelaic Acid 10%','Curederm','CeraVe Cream']}}},
 
-{id:'sun',tab:'Sun',label:'BJJ',sub:'Rest · Recovery · Church',gym:false,cls:'BJJ All Levels 12–1pm',cns:false,warmup:null,
+{id:'d7',tab:'BJJ',label:'BJJ',sub:'Rest · Recovery · Church',gym:false,cls:'BJJ All Levels 12–1pm',cns:false,warmup:null,
 tl:[{t:'12:00',lbl:'BJJ',icon:'bjj'},{t:'14:00',lbl:'Church / Walk',icon:'church'},{t:'21:30',lbl:'Vespers',icon:'candle'}],
 ex:[],abs:[],
 skill:{p1:['Vacuum Breathing 5×15-30s (morning, fasted)'],p2:['Vacuum Breathing 5×15-30s (morning)'],p3:['Vacuum Breathing 5×15-30s (morning)']},
@@ -771,7 +777,8 @@ let S={view:'phase',day:0,week:1,deload:false,
   focusMode:false,
   activeSetEi:-1,activeSetSi:0,
   wristFatigued:false,
-  codexView:'history'
+  codexView:'history',
+  classesWeek:1
 };
 let timerInt=null;
 
@@ -788,6 +795,17 @@ const ldW=()=>{try{return JSON.parse(localStorage.getItem(WKEY))||{}}catch{retur
 const svW=w=>localStorage.setItem(WKEY,JSON.stringify(w));
 const ldCW=()=>{try{const v=JSON.parse(localStorage.getItem(WKKEY));return(v&&v.week>=1&&v.week<=24)?v.week:1;}catch{return 1;}};
 const svCW=w=>localStorage.setItem(WKKEY,JSON.stringify({week:Math.min(Math.max(1,w),24)}));
+const ldCl=()=>{try{return JSON.parse(localStorage.getItem(CLKEY))||{}}catch{return{}}};
+const svCl=d=>localStorage.setItem(CLKEY,JSON.stringify(d));
+
+// ═══════════════════ CLASSES SCHEDULE ═══════════════════
+// Fixed to calendar: Mon/Wed/Fri = Coach Milos 8pm, Sun = BJJ 12pm
+const CLASSES=[
+  {key:'g1',di:0,day:'Mon',time:'8:00pm',label:'Coach Milos',sub:'Gymnastics · 8pm',icon:'gym2',color:'#C9A0DC'},
+  {key:'g2',di:2,day:'Wed',time:'8:00pm',label:'Coach Milos',sub:'Gymnastics · 8pm',icon:'gym2',color:'#C9A0DC'},
+  {key:'g3',di:4,day:'Fri',time:'8:00pm',label:'Coach Milos',sub:'Gymnastics · 8pm',icon:'gym2',color:'#C9A0DC'},
+  {key:'bjj',di:6,day:'Sun',time:'12:00pm',label:'BJJ All Levels',sub:'12–1pm',icon:'bjj',color:'rgba(110,160,231,0.9)'},
+];
 
 // ═══════════════════ PROGRAM MATH ═══════════════════
 function getCurWeek(){return ldCW()}
@@ -797,6 +815,24 @@ function isDeload(w){return DELOAD_WEEKS.includes(w)}
 function getWeekStart(w){const d=new Date(PROGRAM_START);d.setDate(d.getDate()+(w-1)*7);return d}
 function getDayDate(w,di){const d=getWeekStart(w);d.setDate(d.getDate()+di);return d.toISOString().slice(0,10)}
 function getSessionForDate(did,ds){return(ld()[did]||[]).find(s=>s.date?.slice(0,10)===ds)||null}
+function getSessionForWeek(did,week){
+  // Try week-based match first (new system), fall back to date for legacy data
+  const d=ld();
+  const byWeek=(d[did]||[]).find(s=>s.week===week);
+  if(byWeek)return byWeek;
+  // Legacy fallback: match by calendar date
+  const di=DAYS.findIndex(day=>day.id===did);
+  if(di>=0){const ds=getDayDate(week,di);return(d[did]||[]).find(s=>s.date?.slice(0,10)===ds)||null;}
+  return null;
+}
+function getNextUnloggedDay(){
+  const cw=getCurWeek(),d=ld();
+  for(let i=0;i<5;i++){
+    const day=DAYS[i];
+    if(day.gym&&!(d[day.id]||[]).some(s=>s.week===cw))return i;
+  }
+  return 0; // all logged, default to Push
+}
 function getLastSession(did){const s=(ld()[did]||[]);return s.length?s[s.length-1]:null}
 function getAllSessions(did){
   const all=[...(ld()[did]||[])];
@@ -827,9 +863,8 @@ function dlSets(s){return s>=5?Math.ceil(s*.65):s>=3?s-1:s}
 function sessionsThisWeek(){
   const cw=getCurWeek(),d=ld();
   let count=0;
-  DAYS.forEach((day,di)=>{
-    const ds=getDayDate(cw,di);
-    if((d[day.id]||[]).some(s=>s.date?.slice(0,10)===ds))count++;
+  DAYS.forEach(day=>{
+    if((d[day.id]||[]).some(s=>s.week===cw))count++;
   });
   return count;
 }
@@ -861,9 +896,17 @@ function totalSess(){const d=ld();let t=0;for(const k in d)t+=(d[k]||[]).length;
 // ═══════════════════ MIGRATION ═══════════════════
 function migrateV3(){
   try{
-    const v3=JSON.parse(localStorage.getItem(V3KEY));if(!v3)return;
+    const dayMap={mon:'d1',tue:'d2',wed:'d3',thu:'d4',fri:'d5',sat:'d6',sun:'d7'};
     const v10=ld();let ch=false;
-    ['mon','tue','wed','thu','fri','sat','sun'].forEach(k=>{if(v3[k]&&!v10[k]){v10[k]=v3[k];ch=true;}});
+    // Migrate v3 (old day keys) into v10 with new session IDs
+    try{
+      const v3=JSON.parse(localStorage.getItem(V3KEY));
+      if(v3){Object.entries(dayMap).forEach(([old,newId])=>{if(v3[old]&&!v10[newId]){v10[newId]=v3[old].map(s=>({...s,sessionId:newId}));ch=true;}});}
+    }catch{}
+    // Migrate any v10 data still using old mon/tue/wed/thu/fri/sat/sun keys
+    Object.entries(dayMap).forEach(([old,newId])=>{
+      if(v10[old]&&!v10[newId]){v10[newId]=v10[old].map(s=>({...s,sessionId:newId}));delete v10[old];ch=true;}
+    });
     if(ch)sv(v10);
   }catch{}
 }
@@ -878,9 +921,9 @@ function updProtRing(){
     hfg.style.strokeDashoffset=off;
     const col=pct>=1?'#D4AF37':pct>=.7?'#C9A0DC':'rgba(201,160,220,0.7)';
     hfg.style.stroke=col;
-    const glow=pct<.1?2:Math.round(pct*22);
-    const wr=document.getElementById('hProtRing');
-    if(wr)wr.style.filter=`drop-shadow(0 0 ${glow}px ${col})`;
+    const glowPx=pct<.1?0:Math.round(pct*20);
+    const glowDiv=document.getElementById('hProtGlow');
+    if(glowDiv)glowDiv.style.boxShadow=glowPx>0?`0 0 ${glowPx}px ${col}, 0 0 ${glowPx*2}px ${col}40`:'none';
     const ht=document.getElementById('hProtTxt');
     if(ht){ht.textContent=g+'g';ht.style.fill=col;}
   }
@@ -892,8 +935,9 @@ function updProtRing(){
     pfg.style.stroke=col;
     const pt=document.getElementById('phProtTxt');
     if(pt){pt.textContent=g+'g';pt.style.fill=col;}
-    const wr=document.getElementById('phProtRing');
-    if(wr)wr.style.filter=`drop-shadow(0 0 ${Math.round(pct*18)+2}px ${col})`;
+    const glowDiv=document.getElementById('phProtGlow');
+    const glowPx=pct<.1?0:Math.round(pct*16);
+    if(glowDiv)glowDiv.style.boxShadow=glowPx>0?`0 0 ${glowPx}px ${col}, 0 0 ${glowPx*2}px ${col}40`:'none';
   }
 }
 
@@ -912,15 +956,16 @@ function setWrist(state){
 // ═══════════════════ NAV ═══════════════════
 function goToToday(){navTo('today')}
 function navTo(dest){
-  ['bnPhases','bnToday','bnRecovery','bnCodex'].forEach(id=>document.getElementById(id)?.classList.remove('on'));
+  ['bnPhases','bnToday','bnRecovery','bnCodex','bnClasses'].forEach(id=>document.getElementById(id)?.classList.remove('on'));
   if(dest==='phases'){document.getElementById('bnPhases').classList.add('on');showPhase();}
   else if(dest==='today'){
     document.getElementById('bnToday').classList.add('on');
-    S.week=getCurWeek();S.day=new Date().getDay()===0?6:new Date().getDay()-1;
+    S.week=getCurWeek();S.day=getNextUnloggedDay();
     showApp();
   }
   else if(dest==='recovery'){document.getElementById('bnRecovery').classList.add('on');showVouchersModal();}
   else if(dest==='codex'){document.getElementById('bnCodex').classList.add('on');showCodexModal();}
+  else if(dest==='classes'){showClassesModal();}
 }
 
 // ═══════════════════ PHASE DASHBOARD ═══════════════════
@@ -1014,7 +1059,7 @@ function showApp(){
 
 function checkWristUI(){
   const day=DAYS[S.day];
-  const upper=['mon','tue','thu'].includes(day.id);
+  const upper=['d1','d2','d4'].includes(day.id);
   const checked=checkWristToday();
   if(upper&&!checked){
     const el=document.getElementById('wristCheck');
@@ -1064,12 +1109,16 @@ function renderDay(){
   const cw=getCurWeek();
   const phIdx=getPIdx(S.week);
   const dl=S.deload;
-  const dateStr=getDayDate(S.week,S.day);
   const isFuture=S.week>cw,isPast=S.week<cw;
-  const session=getSessionForDate(day.id,dateStr);
+  const session=getSessionForWeek(day.id,S.week);
   const dKey=day.id+'-'+S.week;
   const draft=ldD()[dKey]||{};
   const wrist=checkWristToday();
+  // Date display: show actual session date if logged, today if current week, blank if future
+  const displayDate=session
+    ?new Date(session.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})
+    :(S.week===cw?new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})
+    :'Wk '+S.week+' — not yet logged');
   S.wristFatigued=(wrist==='fatigued');
 
   document.getElementById('hStreak').textContent=calcStreak();
@@ -1084,7 +1133,7 @@ function renderDay(){
   h+=`<div id="focusSentinel" style="height:1px;pointer-events:none"></div>`;
 
   // Wrist check-in
-  h+=`<div id="wristCheck" style="display:${(['mon','tue','thu'].includes(day.id)&&!wrist)?'block':'none'}">
+  h+=`<div id="wristCheck" style="display:${(['d1','d2','d4'].includes(day.id)&&!wrist)?'block':'none'}">
     <div style="font-size:10px;font-weight:700;color:#D4AF37;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px">
       <span style="color:#D4AF37">${IC.hand}</span>Morning Check-In — Wrist &amp; Grip
     </div>
@@ -1094,7 +1143,7 @@ function renderDay(){
     </div>
   </div>`;
 
-  if(wrist==='fatigued'&&['mon','tue','thu'].includes(day.id)){
+  if(wrist==='fatigued'&&['d1','d2','d4'].includes(day.id)){
     h+=`<div style="background:rgba(240,112,112,0.06);border:1px solid rgba(240,112,112,0.2);border-radius:6px;padding:8px 13px;margin-bottom:10px;font-size:11px;color:rgba(240,112,112,0.85);display:flex;align-items:center;gap:6px">
       <span style="color:rgba(240,112,112,0.85);flex-shrink:0">${IC.alert}</span>
       <span><strong>Wrist Fatigue Active</strong> — Target goals automatically reduced 5%</span>
@@ -1121,7 +1170,7 @@ function renderDay(){
       </div>
       <div style="text-align:right">
         <div style="font-size:10px;font-weight:700;color:rgba(201,160,220,0.7);background:rgba(201,160,220,0.07);border:1px solid rgba(201,160,220,0.14);border-radius:6px;padding:4px 10px;margin-bottom:4px">${day.cls}</div>
-        <div style="font-size:9px;color:rgba(150,142,152,0.45)">${new Date(dateStr+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+        <div style="font-size:9px;color:rgba(150,142,152,0.45)">${displayDate}</div>
       </div>
     </div>
   </div>`;
@@ -1140,7 +1189,7 @@ function renderDay(){
       <button onclick="advanceWeek()" style="flex-shrink:0;padding:11px 15px;border-radius:6px;border:1px solid rgba(212,175,55,0.45);background:rgba(212,175,55,0.12);color:#D4AF37;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.8px;white-space:nowrap;box-shadow:0 0 18px rgba(212,175,55,0.1)">Wk ${S.week+1} →</button>
     </div>`;
   }
-  if(day.cns)h+=`<div class="cns-note"><span style="flex-shrink:0;margin-top:1px;color:rgba(240,112,112,0.88)">${IC.alert}</span><span><strong style="display:block;font-size:10px;font-weight:700;margin-bottom:3px">CNS NOTE</strong>Leave 1–2 reps in the tank on all compounds. Fresh CNS required for 8pm gymnastics.</span></div>`;
+  if(day.cns)h+=`<div class="cns-note"><span style="flex-shrink:0;margin-top:1px;color:rgba(240,112,112,0.88)">${IC.alert}</span><span><strong style="display:block;font-size:10px;font-weight:700;margin-bottom:3px">CNS NOTE</strong>Leave 1–2 reps in the tank on all compounds. Reserve CNS capacity — gymnastics class may follow today.</span></div>`;
 
   // Daily timeline
   if(day.tl&&day.tl.length>0){
@@ -1226,7 +1275,7 @@ function renderDay(){
     });
   }
 
-  if(day.id==='sat'){
+  if(day.id==='d6'){
     h+=`<div class="g1" style="border-radius:6px;padding:16px;margin-bottom:10px;border-left:2px solid rgba(201,160,220,0.3)">
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#C9A0DC;margin-bottom:8px">REST + Deep Flexibility</div>
       <div style="font-size:12px;color:rgba(206,195,206,0.68);line-height:1.65;margin-bottom:12px">Active recovery. Walk 8-10k. Eat well. Sleep 8-9h. Deepest flexibility session of the week — invest 20-25 min.</div>
@@ -1235,7 +1284,7 @@ function renderDay(){
       </div>
     </div>`;
   }
-  if(day.id==='sun'){
+  if(day.id==='d7'){
     h+=`<div class="g1" style="border-radius:6px;padding:16px;margin-bottom:10px;border-left:2px solid rgba(201,160,220,0.3)">
       <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#C9A0DC;margin-bottom:8px">BJJ + Rest + Church</div>
       <div style="font-size:12px;color:rgba(206,195,206,0.68);line-height:1.65;margin-bottom:12px">Light drilling only. Fresh rashguard. Shower immediately after. Walk · Church · Meal prep · Sleep 8-9h.</div>
@@ -1245,7 +1294,7 @@ function renderDay(){
     </div>`;
   }
 
-  if(isDeload(S.week)&&day.id!=='sun'){
+  if(isDeload(S.week)&&day.id!=='d7'){
     h+=`<div class="sec-lbl">Stability Cornerstone</div><div class="corner-card">
       <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:#E9C349;margin-bottom:8px">Deload Assessment — Week ${S.week}</div>
       <div style="font-size:11px;color:rgba(206,195,206,0.65);margin-bottom:14px">Three tests before advancing. Record results, share with Milos.</div>`;
@@ -1262,7 +1311,7 @@ function renderDay(){
   }
 
   const skillItems=(day.skill[`p${getPhase(S.week)}`]||day.skill.p1);
-  const skillTtl=`<span style="display:inline-flex;align-items:center;gap:6px"><span style="color:#C9A0DC">${IC.target}</span>${['mon','wed','fri'].includes(day.id)?'Coach Milos Class':'Skill Drills'}</span>`;
+  const skillTtl=`<span style="display:inline-flex;align-items:center;gap:6px"><span style="color:#C9A0DC">${IC.target}</span>${['d1','d3','d5'].includes(day.id)?'Coach Milos Class':'Skill Drills'}</span>`;
   h+=`<div class="sec-lbl">Skill Work · P${getPhase(S.week)}</div>`;
   h+=mkColl('skC',skillTtl,skillItems.map((s,i)=>`<div class="chk-row" id="sk${i}" onclick="tc('sk${i}')"><div class="chk-box">✓</div><div class="chk-txt">${s}</div></div>`).join(''));
 
@@ -1367,8 +1416,7 @@ document.getElementById('svB').addEventListener('click',()=>{
   if(S.view!=='day')return;
   const day=DAYS[S.day];if(S.week>getCurWeek())return;
   const data=ld();if(!data[day.id])data[day.id]=[];
-  const dateStr=getDayDate(S.week,S.day);
-  const ses={date:new Date(dateStr+'T12:00:00').toISOString(),exercises:[],deload:S.deload,week:S.week,phase:getPhase(S.week)};
+  const ses={date:new Date().toISOString(),exercises:[],deload:S.deload,week:S.week,phase:getPhase(S.week),sessionId:day.id};
   day.ex.forEach((ex,ei)=>{
     const pd=ex.p[getPIdx(S.week)]||ex.p[0];
     const sets=S.deload?dlSets(pd.s):pd.s;
@@ -1377,7 +1425,7 @@ document.getElementById('svB').addEventListener('click',()=>{
     if(exSets.some(s=>s.w||s.r))ses.exercises.push({name:ex.n,sets:exSets});
   });
   if(!ses.exercises.length&&day.ex.length>0&&!confirm('No weights logged. Save skill/rest session?'))return;
-  data[day.id]=data[day.id].filter(s=>s.date?.slice(0,10)!==dateStr);
+  data[day.id]=data[day.id].filter(s=>s.week!==S.week);
   data[day.id].push(ses);if(data[day.id].length>40)data[day.id]=data[day.id].slice(-40);
   sv(data);
   const draft=ldD();delete draft[day.id+'-'+S.week];svD(draft);
@@ -1465,7 +1513,7 @@ function renderHeatmap(){
     h+=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px">`;
     DAYS.forEach((day,di)=>{
       const ds=getDayDate(w,di);
-      const sessions=(d[day.id]||[]).filter(s=>s.date?.slice(0,10)===ds);
+      const sessions=(d[day.id]||[]).filter(s=>s.week===w||(s.date?.slice(0,10)===ds&&!s.week));
       const isDl=isDeload(w),hasSession=sessions.length>0,hasEx=sessions[0]?.exercises?.length>0;
       let cls='h0';
       if(isDl&&hasSession)cls='deload-cell';
@@ -1479,9 +1527,10 @@ function renderHeatmap(){
   let totalDays=0,loggedDays=0;
   for(let w=startWeek;w<=cw;w++){
     DAYS.forEach((day,di)=>{
-      const ds=getDayDate(w,di);
-      const past=new Date(ds)<=new Date();
-      if(past&&day.gym){totalDays++;if((d[day.id]||[]).some(s=>s.date?.slice(0,10)===ds))loggedDays++;}
+      if(!day.gym)return;
+      const hasSession=(d[day.id]||[]).some(s=>s.week===w||(s.date?.slice(0,10)===getDayDate(w,di)&&!s.week));
+      if(w<cw){totalDays++;if(hasSession)loggedDays++;}
+      else if(w===cw&&hasSession){totalDays++;loggedDays++;}
     });
   }
   const consistency=totalDays>0?Math.round(loggedDays/totalDays*100):0;
@@ -1578,12 +1627,12 @@ function showVouchersModal(){
   <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px">`;
   for(let i=0;i<12;i++){
     const u=used[i];
-    const bg=u?.type==='sauna'?'rgba(212,175,55,0.16)':u?.type==='ice'?'rgba(110,160,231,0.16)':'rgba(10,10,15,0.5)';
-    const bc=u?.type==='sauna'?'rgba(212,175,55,0.45)':u?.type==='ice'?'rgba(110,160,231,0.45)':'rgba(212,175,55,0.2)';
+    const bg=u?.type==='sauna'?'rgba(212,175,55,0.18)':u?.type==='ice'?'rgba(110,160,231,0.18)':'rgba(10,10,15,0.5)';
+    const bc=u?.type==='sauna'?'rgba(212,175,55,0.55)':u?.type==='ice'?'rgba(110,160,231,0.55)':'rgba(212,175,55,0.2)';
     const iconHtml=u
-      ?(u.type==='sauna'?`<span style="color:#D4AF37">${IC.therm}</span>`:`<span style="color:rgba(110,160,231,0.9)">${IC.snow}</span>`)
+      ?(u.type==='sauna'?`<span style="color:#D4AF37">${IC.therm}</span>`:`<span style="color:rgba(110,160,231,0.95)">${IC.snow}</span>`)
       :`<span style="color:rgba(150,142,152,0.25)">${IC.therm}</span>`;
-    h+=`<div style="width:50px;height:50px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:${u?'default':'pointer'};border:1px solid ${bc};background:${bg};opacity:${u?0.45:1};transition:all .25s" onclick="${u?'':'openThermalDrawer('+i+')'}" title="${u?(u.type+' — '+u.date):'Tap to log'}">
+    h+=`<div style="width:50px;height:50px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:${u?'default':'pointer'};border:1px solid ${bc};background:${bg};transition:all .25s" onclick="${u?'':'openThermalDrawer('+i+')'}" title="${u?(u.type+' — '+u.date):'Tap to log'}">
       ${iconHtml}</div>`;
   }
   h+=`</div>
@@ -1636,8 +1685,9 @@ function showProteinModal(){
   <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;color:#C9A0DC;margin-bottom:4px">Protein Tracker</div>
   <div style="font-size:10px;color:rgba(150,142,152,0.55);margin-bottom:4px">Daily target: ${PROTEIN_TARGET}g · 63.2kg · Resets midnight</div>
   <div style="font-size:10px;color:rgba(201,160,220,0.42);text-align:center;margin-bottom:18px;letter-spacing:.4px">Drag the ring to set your intake</div>
-  <div style="display:flex;justify-content:center;margin-bottom:22px">
-    <svg id="protModalRing" width="170" height="170" viewBox="0 0 100 100" style="touch-action:none;cursor:grab;filter:drop-shadow(0 0 ${Math.round(pct*28)+4}px ${col})">
+  <div style="display:flex;justify-content:center;margin-bottom:22px;position:relative">
+    <div id="protModalGlow" style="position:absolute;inset:-4px;border-radius:50%;pointer-events:none;transition:box-shadow .3s"></div>
+    <svg id="protModalRing" width="170" height="170" viewBox="0 0 100 100" style="touch-action:none;cursor:grab">
       <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(201,160,220,0.08)" stroke-width="6"/>
       <circle id="protFgCircle" cx="50" cy="50" r="40" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" transform="rotate(-90,50,50)"/>
       <text id="protGText" x="50" y="45" text-anchor="middle" font-family="DM Sans" font-size="17" font-weight="700" fill="${col}">${p.g}g</text>
@@ -1648,7 +1698,10 @@ function showProteinModal(){
   <button onclick="const pp=ldP();pp.g=0;svP(pp);updProtRing();showProteinModal()" style="width:100%;padding:10px;border-radius:6px;border:1px solid rgba(150,142,152,0.12);background:rgba(10,10,15,0.5);color:rgba(150,142,152,0.5);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Reset to 0</button>`;
   document.getElementById('mC').innerHTML=h;
   document.getElementById('modal').classList.add('open');
-  requestAnimationFrame(()=>attachProteinDrag(document.getElementById('protModalRing')));
+  requestAnimationFrame(()=>{
+    attachProteinDrag(document.getElementById('protModalRing'));
+    updateModalRing(ldP().g); // seed glow on open
+  });
 }
 
 // ─────────────────── PROTEIN MODAL RING LIVE UPDATER ───────────────────
@@ -1659,11 +1712,11 @@ function updateModalRing(g){
   const fg=document.getElementById('protFgCircle');
   const txt=document.getElementById('protGText');
   const ptxt=document.getElementById('protPctText');
-  const svg=document.getElementById('protModalRing');
+  const glowDiv=document.getElementById('protModalGlow');
   if(fg){fg.setAttribute('stroke-dashoffset',off.toFixed(2));fg.setAttribute('stroke',col);}
   if(txt){txt.textContent=g+'g';txt.setAttribute('fill',col);}
   if(ptxt)ptxt.textContent=Math.round(pct*100)+'%';
-  if(svg)svg.style.filter=`drop-shadow(0 0 ${Math.round(pct*28)+4}px ${col})`;
+  if(glowDiv){const px=pct<.1?0:Math.round(pct*32);glowDiv.style.boxShadow=px>0?`0 0 ${px}px ${col}, 0 0 ${px*2}px ${col}30`:'none';}
 }
 
 // ─────────────────── DRAGGABLE PROTEIN RING ───────────────────
@@ -1680,10 +1733,12 @@ function attachProteinDrag(svgEl){
     return Math.round((angle/(2*Math.PI))*PROTEIN_TARGET);
   };
   const onMove=(touch)=>{
-    const g=Math.max(0,Math.min(Math.round(PROTEIN_TARGET*1.6),getVal(touch)));
+    const raw=getVal(touch);
+    // Hard cap at target — ring locks at 100%, never wraps
+    const g=Math.max(0,Math.min(PROTEIN_TARGET,raw));
     const pp=ldP();pp.g=g;svP(pp);
     if(g!==lastInt){
-      if(navigator.vibrate)navigator.vibrate(5); // mechanical tick
+      if(navigator.vibrate)navigator.vibrate(5);
       lastInt=g;
     }
     updProtRing();
@@ -1694,7 +1749,101 @@ function attachProteinDrag(svgEl){
   svgEl.addEventListener('touchend',()=>{dragging=false;},{passive:true});
 }
 
-// ═══════════════════ CLOSE MODAL ═══════════════════
+// ═══════════════════ CLASSES MODAL ═══════════════════
+function showClassesModal(week){
+  S.classesWeek=week||getCurWeek();
+  ['bnPhases','bnToday','bnRecovery','bnCodex','bnClasses'].forEach(id=>document.getElementById(id)?.classList.remove('on'));
+  document.getElementById('bnClasses')?.classList.add('on');
+  renderClassesModal();
+}
+function renderClassesModal(){
+  const w=S.classesWeek,cw=getCurWeek(),cl=ldCl();
+  const wData=cl[w]||{};
+  const attended=CLASSES.filter(c=>wData[c.key]==='attended').length;
+  const now=new Date(),nowDi=now.getDay()===0?6:now.getDay()-1; // 0=Mon…6=Sun
+  const isCurrentWeek=w===cw;
+
+  let h=`<div class="m-handle"></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;color:#C9A0DC">Classes</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="navClassesWeek(-1)" style="width:28px;height:28px;border-radius:6px;background:rgba(10,10,15,0.7);border:1px solid rgba(201,160,220,0.1);color:rgba(206,195,206,0.55);font-size:13px;cursor:pointer;${w<=1?'opacity:.3;pointer-events:none':''}">‹</button>
+      <span style="font-size:11px;font-weight:700;color:rgba(201,160,220,0.7);min-width:52px;text-align:center">Wk ${w}</span>
+      <button onclick="navClassesWeek(1)" style="width:28px;height:28px;border-radius:6px;background:rgba(10,10,15,0.7);border:1px solid rgba(201,160,220,0.1);color:rgba(206,195,206,0.55);font-size:13px;cursor:pointer;${w>=24?'opacity:.3;pointer-events:none':''}">›</button>
+    </div>
+  </div>
+  <div style="font-size:10px;color:rgba(150,142,152,0.55);margin-bottom:20px">${attended} of ${CLASSES.length} attended · Week ${w} of 24</div>`;
+
+  CLASSES.forEach(cls=>{
+    const status=wData[cls.key]||null;
+    const isAttended=status==='attended',isMissed=status==='missed';
+    const classDate=getDayDate(w,cls.di);
+    const isPast=new Date(classDate+'T23:59:00')<now;
+    const isToday=isCurrentWeek&&cls.di===nowDi;
+    const isComing=isCurrentWeek&&!isPast&&!isToday;
+    const dateLabel=new Date(classDate+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    const dotColor=isAttended?'#C9A0DC':isMissed?'rgba(240,112,112,0.7)':'rgba(150,142,152,0.25)';
+    const cardBorder=isToday?'rgba(201,160,220,0.35)':isAttended?'rgba(201,160,220,0.2)':isMissed?'rgba(240,112,112,0.15)':'rgba(201,160,220,0.08)';
+    const cardBg=isAttended?'rgba(201,160,220,0.06)':isMissed?'rgba(240,112,112,0.04)':'rgba(10,10,15,0.4)';
+
+    h+=`<div style="background:${cardBg};border:1px solid ${cardBorder};border-radius:6px;padding:14px 15px;margin-bottom:10px;${isToday?'box-shadow:0 0 18px rgba(201,160,220,0.1)':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0;${isAttended?'box-shadow:0 0 8px rgba(201,160,220,0.6)':''}"></div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#E2E2E2">${cls.label}</div>
+            <div style="font-size:10px;color:rgba(150,142,152,0.55);margin-top:1px">${cls.sub}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;font-weight:700;color:${isToday?'#C9A0DC':'rgba(150,142,152,0.5)'};${isToday?'text-shadow:0 0 10px rgba(201,160,220,0.4)':''}">${cls.day} · ${cls.time}</div>
+          <div style="font-size:9px;color:rgba(150,142,152,0.38);margin-top:1px">${dateLabel}</div>
+          ${isToday?`<div style="font-size:8px;font-weight:700;color:#C9A0DC;letter-spacing:1px;text-transform:uppercase;margin-top:2px">Today</div>`:''}
+          ${isComing?`<div style="font-size:8px;color:rgba(150,142,152,0.38);letter-spacing:1px;text-transform:uppercase;margin-top:2px">Upcoming</div>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="logClass(${w},'${cls.key}','attended')" style="flex:1;padding:8px;border-radius:6px;border:1px solid ${isAttended?'rgba(201,160,220,0.6)':'rgba(201,160,220,0.15)'};background:${isAttended?'rgba(201,160,220,0.14)':'rgba(10,10,15,0.5)'};color:${isAttended?'#C9A0DC':'rgba(150,142,152,0.55)'};font-size:10px;font-weight:700;letter-spacing:.6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">
+          ${isAttended?'✓ ':''} Attended
+        </button>
+        <button onclick="logClass(${w},'${cls.key}','missed')" style="flex:1;padding:8px;border-radius:6px;border:1px solid ${isMissed?'rgba(240,112,112,0.4)':'rgba(150,142,152,0.1)'};background:${isMissed?'rgba(240,112,112,0.08)':'rgba(10,10,15,0.5)'};color:${isMissed?'rgba(240,112,112,0.85)':'rgba(150,142,152,0.4)'};font-size:10px;font-weight:700;letter-spacing:.6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s">
+          ${isMissed?'✗ ':''} Missed
+        </button>
+        ${status?`<button onclick="logClass(${w},'${cls.key}',null)" style="width:36px;padding:8px;border-radius:6px;border:1px solid rgba(150,142,152,0.08);background:rgba(10,10,15,0.5);color:rgba(150,142,152,0.3);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif">✕</button>`:''}
+      </div>
+    </div>`;
+  });
+
+  // Attendance summary bar
+  const pct=Math.round(attended/CLASSES.length*100);
+  h+=`<div style="margin-top:8px;background:rgba(10,10,15,0.5);border:1px solid rgba(201,160,220,0.08);border-radius:6px;padding:12px 14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(150,142,152,0.5)">Week Attendance</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#C9A0DC">${pct}%</div>
+    </div>
+    <div style="height:2px;background:rgba(201,160,220,0.08);border-radius:2px;overflow:hidden">
+      <div style="height:100%;width:${pct}%;background:#C9A0DC;border-radius:2px;transition:width .4s"></div>
+    </div>
+  </div>`;
+
+  document.getElementById('mC').innerHTML=h;
+  document.getElementById('modal').classList.add('open');
+}
+function navClassesWeek(delta){
+  const nw=S.classesWeek+delta;
+  if(nw<1||nw>24)return;
+  S.classesWeek=nw;
+  renderClassesModal();
+}
+function logClass(week,key,status){
+  const cl=ldCl();
+  if(!cl[week])cl[week]={};
+  if(status===null)delete cl[week][key];
+  else cl[week][key]=status;
+  svCl(cl);
+  if(navigator.vibrate)navigator.vibrate(status==='attended'?[20,10,20]:10);
+  renderClassesModal();
+}
 function closeModal(){document.getElementById('modal').classList.remove('open')}
 
 // ═══════════════════ VESPERS ═══════════════════
@@ -1720,9 +1869,9 @@ document.addEventListener('visibilitychange',()=>{
 // ═══════════════════ INIT ═══════════════════
 function init(){
   migrateV3();
-  S.week=getCurWeek(); // reads localStorage — defaults to 1 on first load
-  const dow=new Date().getDay();
-  S.day=dow===0?6:dow-1;
+  S.week=getCurWeek();
+  S.day=getNextUnloggedDay();
+  S.classesWeek=getCurWeek();
   if(isDeload(S.week))S.deload=true;
   reqWakeLock();
   // Show Phase Dashboard immediately — Cathedral Doors overlays it at z-index 1000
@@ -1753,7 +1902,7 @@ renderDay=function(){
   applyEclipseMode();
   injectRPESliders();
   attachLongPressAttrs();
-  if(DAYS[S.day]?.id==='sun')injectSabbathVerses();
+  if(DAYS[S.day]?.id==='d7')injectSabbathVerses();
 };
 
 // ─────────────────── WRAP toggleDeload ───────────────────
@@ -2006,8 +2155,7 @@ _ascObserver.observe(document.getElementById('svB'),{attributes:true,attributeFi
 function triggerAscension(){
   const day=DAYS[S.day];
   if(!day||day.ex.length===0)return;
-  const dateStr=getDayDate(S.week,S.day);
-  const ses=getSessionForDate(day.id,dateStr);
+  const ses=getSessionForWeek(day.id,S.week);
   if(!ses||!ses.exercises.length)return;
   // Calculate tonnage + PRs from saved session
   let tonnage=0,prCount=0;
