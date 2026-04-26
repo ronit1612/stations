@@ -385,9 +385,76 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
 /* Box breath phase label */
 .t-breath-lbl{font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:rgba(201,160,220,0.5);margin-top:1px;min-width:42px;text-align:center;transition:opacity .4s}
 
-/* Protein ring glow — needs overflow visible + GPU layer to stop iOS square-clip */
-.prot-ring-wrap{cursor:pointer;position:relative;padding:14px;margin:-14px;overflow:visible;transform:translateZ(0);-webkit-transform:translateZ(0);will-change:filter}
-#hProtRing,#phProtRing{overflow:visible;transform:translateZ(0);-webkit-transform:translateZ(0)}
+/* ═══════════════════ PROTEIN RING — iOS CORANIMATION FIX ═══════════════════ */
+/* Root cause: filter:drop-shadow() on an SVG during touchmove repaints causes
+   Safari's CoreAnimation to expose its rectangular compositing layer bounding box.
+   Fix: remove filter from SVG entirely. Use a positioned div with box-shadow
+   (border-radius:50%) as the glow element — native box-shadow on a rounded div
+   does NOT trigger the iOS bounding-box artifact during touchmove repaints. */
+.prot-ring-wrap{
+  cursor:pointer;position:relative;
+  padding:14px;margin:-14px;
+  overflow:visible;
+  isolation:isolate;
+  -webkit-transform:translate3d(0,0,0);
+  transform:translate3d(0,0,0);
+  will-change:transform;
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
+}
+/* Glow div sits absolutely behind the SVG; updated from JS via .style.boxShadow */
+.prot-glow{
+  position:absolute;top:50%;left:50%;
+  border-radius:50%;pointer-events:none;
+  -webkit-transform:translate3d(-50%,-50%,0);
+  transform:translate3d(-50%,-50%,0);
+  transition:box-shadow .4s ease;
+  will-change:box-shadow;
+}
+/* SVG itself: NO filter, just GPU promotion for smooth compositing */
+#hProtRing,#phProtRing{
+  overflow:visible;
+  -webkit-transform:translate3d(0,0,0);
+  transform:translate3d(0,0,0);
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
+  will-change:opacity;
+}
+
+/* ═══════════════════ PR ANAMORPHIC FLARE OVERLAY ═══════════════════ */
+@keyframes prFlareOut{0%{opacity:1}100%{opacity:0}}
+#prFlareOverlay{position:fixed;inset:0;pointer-events:none;z-index:9997;
+  box-shadow:inset 0 0 120px rgba(212,175,55,0.45),inset 0 0 40px rgba(212,175,55,0.2);
+  opacity:0;border-radius:0}
+#prFlareOverlay.active{animation:prFlareOut 1.2s cubic-bezier(.2,.8,.2,1) forwards}
+
+/* ═══════════════════ STAINED GLASS LEDGER (90-day) ═══════════════════ */
+.ledger-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.ledger-scroll::-webkit-scrollbar{display:none}
+.ledger-grid{display:flex;flex-direction:column;gap:2px}
+.ledger-week{display:flex;gap:2px}
+.ledger-cell{width:11px;height:11px;border-radius:2px;flex-shrink:0;transition:all .2s;cursor:default}
+.lc-0{background:#000;border:1px solid rgba(255,255,255,0.05)}
+.lc-1{background:rgba(150,142,152,0.22);border:1px solid rgba(150,142,152,0.12)}
+.lc-2{background:rgba(201,160,220,0.72);box-shadow:0 0 5px rgba(201,160,220,0.55);border:1px solid rgba(201,160,220,0.85)}
+.lc-dl{background:rgba(212,175,55,0.55);box-shadow:0 0 5px rgba(212,175,55,0.35);border:1px solid rgba(212,175,55,0.65)}
+
+/* ═══════════════════ ARCHIVES ═══════════════════ */
+.arch-btn{width:100%;padding:12px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .22s;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.arch-btn-export{background:rgba(201,160,220,0.07);border:1px solid rgba(201,160,220,0.22);color:#C9A0DC}
+.arch-btn-export:active{background:rgba(201,160,220,0.15)}
+.arch-btn-restore{background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.2);color:#D4AF37}
+.arch-btn-restore:active{background:rgba(212,175,55,0.14)}
+#archToast{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:50%;
+  -webkit-transform:translateX(-50%);transform:translateX(-50%);
+  background:rgba(8,8,12,0.96);border:1px solid rgba(201,160,220,0.28);border-radius:6px;
+  padding:10px 22px;font-size:11px;font-weight:700;color:#C9A0DC;letter-spacing:.8px;
+  z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none}
+#archToast.show{opacity:1}
+
+/* PR history gold rendering */
+.pr-hist-set{color:#D4AF37;font-weight:700}
+.pr-spark{display:inline-block;width:9px;height:9px;margin-left:2px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -423,12 +490,15 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
     </div>
   </div>
 
+  <div id="ledger90Container"></div>
+
   <div style="max-width:500px;margin:0 auto;padding:0 16px;position:relative;z-index:2">
     <div style="padding:18px 0 14px;display:flex;justify-content:space-between;align-items:center">
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:#C9A0DC" class="text-glow-ac">STATIONS</div>
       <div style="display:flex;align-items:center;gap:10px">
         <div onclick="showProteinModal()" class="prot-ring-wrap" style="display:inline-flex">
-          <svg id="phProtRing" width="36" height="36" viewBox="0 0 36 36" style="overflow:visible;transform:translateZ(0);-webkit-transform:translateZ(0)"><circle class="pring-bg" cx="18" cy="18" r="14"/><circle class="pring-fg" id="phPRingFg" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"/><text x="18" y="22" text-anchor="middle" font-family="DM Sans" font-size="8" font-weight="700" fill="#C9A0DC" id="phProtTxt">0g</text></svg>
+          <div id="phProtGlow" class="prot-glow" style="width:36px;height:36px"></div>
+          <svg id="phProtRing" width="36" height="36" viewBox="0 0 36 36" style="overflow:visible;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden"><circle class="pring-bg" cx="18" cy="18" r="14"/><circle class="pring-fg" id="phPRingFg" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"/><text x="18" y="22" text-anchor="middle" font-family="DM Sans" font-size="8" font-weight="700" fill="#C9A0DC" id="phProtTxt">0g</text></svg>
         </div>
         <div style="display:flex;align-items:center;gap:5px;background:rgba(201,160,220,0.08);border:1px solid rgba(201,160,220,0.14);border-radius:6px;padding:5px 11px;font-size:11px;font-weight:700;color:#C9A0DC">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3C8.928 6.857 9.776 4.946 12 3c.5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3A2.5 2.5 0 0 0 8.5 14.5z"/></svg>
@@ -466,7 +536,8 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
       <div class="hdr-wordmark" style="font-family:'Cormorant Garamond',serif;font-size:clamp(14px,4.5vw,20px);font-style:italic;letter-spacing:clamp(0px,0.28vw,2px);white-space:nowrap;flex-shrink:1;min-width:0">S<span style="color:#C9A0DC">T</span>ATIONS</div>
       <div style="display:flex;align-items:center;gap:8px">
         <div onclick="showProteinModal()" class="prot-ring-wrap" style="display:inline-flex">
-          <svg id="hProtRing" width="40" height="40" viewBox="0 0 40 40" style="overflow:visible;transform:translateZ(0);-webkit-transform:translateZ(0)">
+          <div id="hProtGlow" class="prot-glow" style="width:40px;height:40px"></div>
+          <svg id="hProtRing" width="40" height="40" viewBox="0 0 40 40" style="overflow:visible;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden">
             <circle class="pring-bg" cx="20" cy="20" r="16"/>
             <circle class="pring-fg" id="hPRingFg" cx="20" cy="20" r="16" stroke-dasharray="100.53" stroke-dashoffset="100.53"/>
             <text x="20" y="24.5" text-anchor="middle" font-family="DM Sans" font-size="8.5" font-weight="700" fill="#C9A0DC" id="hProtTxt">0g</text>
@@ -591,6 +662,9 @@ body.eclipse-mode .pr-badge{background:linear-gradient(135deg,#C8C8D8,#9898AA)!i
 
 <!-- ═══════════════════════ ASCENSION SCREEN ═══════════════════════ -->
 <div id="ascension"></div>
+
+<!-- ═══════════════════════ PR FLARE OVERLAY ═══════════════════════ -->
+<div id="prFlareOverlay"></div>
 
 <script>
 // ═══════════════════ CONSTANTS ═══════════════════
@@ -904,9 +978,10 @@ function updProtRing(){
     hfg.style.strokeDashoffset=off;
     const col=pct>=1?'#D4AF37':pct>=.7?'#C9A0DC':'rgba(201,160,220,0.7)';
     hfg.style.stroke=col;
-    const glow=pct<.1?2:Math.round(pct*22);
-    const wr=document.getElementById('hProtRing');
-    if(wr)wr.style.filter=`drop-shadow(0 0 ${glow}px ${col})`;
+    // iOS fix: box-shadow on rounded glow div — no filter on SVG
+    const glowPx=pct<.1?3:Math.round(pct*28);
+    const hg=document.getElementById('hProtGlow');
+    if(hg)hg.style.boxShadow=`0 0 ${glowPx}px ${col},0 0 ${glowPx*2}px ${pct>=1?'rgba(212,175,55,0.3)':'rgba(201,160,220,0.25)'}`;
     const ht=document.getElementById('hProtTxt');
     if(ht){ht.textContent=g+'g';ht.style.fill=col;}
   }
@@ -918,8 +993,10 @@ function updProtRing(){
     pfg.style.stroke=col;
     const pt=document.getElementById('phProtTxt');
     if(pt){pt.textContent=g+'g';pt.style.fill=col;}
-    const wr=document.getElementById('phProtRing');
-    if(wr)wr.style.filter=`drop-shadow(0 0 ${Math.round(pct*18)+2}px ${col})`;
+    // iOS fix: box-shadow on rounded glow div — no filter on SVG
+    const glowPx=Math.round(pct*22)+2;
+    const phg=document.getElementById('phProtGlow');
+    if(phg)phg.style.boxShadow=`0 0 ${glowPx}px ${col},0 0 ${glowPx*2}px ${pct>=1?'rgba(212,175,55,0.25)':'rgba(201,160,220,0.2)'}`;
   }
 }
 
@@ -969,6 +1046,9 @@ function showPhase(){
   S.view='phase';
   updProtRing();
   renderPilgrimageMap();
+  // Inject 90-day Stained Glass Ledger
+  const ledgerEl=document.getElementById('ledger90Container');
+  if(ledgerEl)ledgerEl.innerHTML=renderLedger90();
   renderPhase();
 }
 
@@ -1391,6 +1471,7 @@ function onWInput(inp,ei){
     const ra=document.getElementById('ra-'+ei),pr=document.getElementById('pr-'+ei);
     if(ra){ra.classList.remove('fire');void ra.offsetWidth;ra.classList.add('fire');}
     if(pr){pr.classList.add('show');setTimeout(()=>pr.classList.remove('show'),4000);}
+    triggerPRFlare();
   }
   if(navigator.vibrate)navigator.vibrate(8);
 }
@@ -1418,7 +1499,15 @@ document.getElementById('svB').addEventListener('click',()=>{
     const pd=ex.p[getPIdx(S.week)]||ex.p[0];
     const sets=S.deload?dlSets(pd.s):pd.s;
     const exSets=[];
-    for(let si=0;si<sets;si++)exSets.push({w:document.querySelector(`[data-e="${ei}"][data-s="${si}"][data-f="w"]`)?.value||'',r:document.querySelector(`[data-e="${ei}"][data-s="${si}"][data-f="r"]`)?.value||''});
+    for(let si=0;si<sets;si++){
+      const wVal=document.querySelector(`[data-e="${ei}"][data-s="${si}"][data-f="w"]`)?.value||'';
+      const rVal=document.querySelector(`[data-e="${ei}"][data-s="${si}"][data-f="r"]`)?.value||'';
+      const wNum=parseFloat(wVal);
+      const bestPre=getAllBest(day.id,ex.n);
+      const setObj={w:wVal,r:rVal};
+      if(wNum>0&&bestPre>0&&wNum>=bestPre)setObj.pr=true;
+      exSets.push(setObj);
+    }
     if(exSets.some(s=>s.w||s.r))ses.exercises.push({name:ex.n,sets:exSets});
   });
   if(!ses.exercises.length&&day.ex.length>0&&!confirm('No weights logged. Save skill/rest session?'))return;
@@ -1587,6 +1676,21 @@ function renderVault(){
     h+=`</div>`;
   }
   h+=`<button onclick="if(confirm('Clear all data?')){localStorage.removeItem('${KEY}');localStorage.removeItem('${DKEY}');closeModal();}" style="margin-top:18px;width:100%;padding:10px;border-radius:6px;border:1px solid rgba(240,112,112,0.2);background:rgba(240,112,112,0.05);color:rgba(240,112,112,0.65);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Clear All Data</button>`;
+  h+=`<div class="g1" style="border-radius:6px;padding:16px;margin-top:16px;box-shadow:inset 0 1px 0 rgba(201,160,220,0.17),0 2px 22px rgba(0,0,0,0.45)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A0DC" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#C9A0DC">The Archives</div>
+    </div>
+    <div style="font-size:10px;color:rgba(150,142,152,0.5);margin-bottom:14px;line-height:1.5">Full data backup — all localStorage keys encoded as Base64. Export to clipboard, then paste to restore on any device.</div>
+    <button class="arch-btn arch-btn-export" onclick="exportArchive()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export Archive
+    </button>
+    <button class="arch-btn arch-btn-restore" onclick="restoreArchive()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 10 12 15 7 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Restore Archive
+    </button>
+  </div>`;
   return h;
 }
 
@@ -1599,7 +1703,14 @@ function renderHistoryList(){
     const dt=new Date(s.date);
     h+=`<div class="hist-ent">
       <div style="font-size:10px;font-weight:700;color:#C9A0DC;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">${s.deload?'DL W'+(s.week||'?')+' — ':'Ph'+(s.phase||1)+' W'+(s.week||'?')+' — '}${dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</div>`;
-    s.exercises?.forEach(e=>h+=`<div style="font-size:12px;font-weight:600;color:#E2E2E2;margin-bottom:1px">${e.name}</div><div style="font-size:11px;color:rgba(206,195,206,0.58);font-variant-numeric:tabular-nums;margin-bottom:5px">${e.sets.filter(st=>st.w).map(st=>st.w+'kg×'+(st.r||'?')).join(' · ')}</div>`);
+    s.exercises?.forEach(e=>{
+      const setStr=e.sets.filter(st=>st.w).map(st=>{
+        const txt=st.w+'kg×'+(st.r||'?');
+        if(st.pr)return`<span class="pr-hist-set">${txt}<svg class="pr-spark" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>`;
+        return`<span>${txt}</span>`;
+      }).join('<span style="color:rgba(150,142,152,0.3)"> · </span>');
+      h+=`<div style="font-size:12px;font-weight:600;color:#E2E2E2;margin-bottom:1px">${e.name}</div><div style="font-size:11px;color:rgba(206,195,206,0.58);font-variant-numeric:tabular-nums;margin-bottom:5px">${setStr}</div>`;
+    });
     h+=`</div>`;
   });
   return h;
@@ -1711,13 +1822,16 @@ function showProteinModal(){
   <div style="font-size:10px;color:rgba(150,142,152,0.55);margin-bottom:4px">Daily target: ${PROTEIN_TARGET}g · 63.2kg · Resets midnight</div>
   <div style="font-size:10px;color:rgba(201,160,220,0.42);text-align:center;margin-bottom:18px;letter-spacing:.4px">Drag the ring to set your intake</div>
   <div style="display:flex;justify-content:center;margin-bottom:22px">
-    <svg id="protModalRing" width="170" height="170" viewBox="0 0 100 100" style="touch-action:none;cursor:grab;filter:drop-shadow(0 0 ${Math.round(pct*28)+4}px ${col})">
-      <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(201,160,220,0.08)" stroke-width="6"/>
-      <circle id="protFgCircle" cx="50" cy="50" r="40" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" transform="rotate(-90,50,50)"/>
-      <text id="protGText" x="50" y="45" text-anchor="middle" font-family="DM Sans" font-size="17" font-weight="700" fill="${col}">${p.g}g</text>
-      <text x="50" y="57" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(150,142,152,0.55)">of ${PROTEIN_TARGET}g</text>
-      <text id="protPctText" x="50" y="67" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(150,142,152,0.45)">${pPct}%</text>
-    </svg>
+    <div style="position:relative;width:170px;height:170px;isolation:isolate;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0)">
+      <div id="protModalGlow" style="position:absolute;top:50%;left:50%;width:130px;height:130px;border-radius:50%;pointer-events:none;-webkit-transform:translate3d(-50%,-50%,0);transform:translate3d(-50%,-50%,0);will-change:box-shadow;transition:box-shadow .08s linear;box-shadow:0 0 ${Math.round(pct*32)+6}px ${col},0 0 ${(Math.round(pct*32)+6)*2}px ${pct>=1?'rgba(212,175,55,0.25)':'rgba(201,160,220,0.22)'}"></div>
+      <svg id="protModalRing" width="170" height="170" viewBox="0 0 100 100" style="position:relative;touch-action:none;cursor:grab;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden;will-change:opacity">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(201,160,220,0.08)" stroke-width="6"/>
+        <circle id="protFgCircle" cx="50" cy="50" r="40" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" transform="rotate(-90,50,50)"/>
+        <text id="protGText" x="50" y="45" text-anchor="middle" font-family="DM Sans" font-size="17" font-weight="700" fill="${col}">${p.g}g</text>
+        <text x="50" y="57" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(150,142,152,0.55)">of ${PROTEIN_TARGET}g</text>
+        <text id="protPctText" x="50" y="67" text-anchor="middle" font-family="DM Sans" font-size="8" fill="rgba(150,142,152,0.45)">${pPct}%</text>
+      </svg>
+    </div>
   </div>
   <button onclick="const pp=ldP();pp.g=0;svP(pp);updProtRing();showProteinModal()" style="width:100%;padding:10px;border-radius:6px;border:1px solid rgba(150,142,152,0.12);background:rgba(10,10,15,0.5);color:rgba(150,142,152,0.5);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif">Reset to 0</button>`;
   document.getElementById('mC').innerHTML=h;
@@ -1737,7 +1851,9 @@ function updateModalRing(g){
   if(fg){fg.setAttribute('stroke-dashoffset',off.toFixed(2));fg.setAttribute('stroke',col);}
   if(txt){txt.textContent=g+'g';txt.setAttribute('fill',col);}
   if(ptxt)ptxt.textContent=Math.round(pct*100)+'%';
-  if(svg)svg.style.filter=`drop-shadow(0 0 ${Math.round(pct*28)+4}px ${col})`;
+  if(svg)svg.style.filter='none'; // filter removed — glow handled by #protModalGlow div
+  const gDiv=document.getElementById('protModalGlow');
+  if(gDiv){const glowPx=Math.round(pct*32)+6;gDiv.style.boxShadow=`0 0 ${glowPx}px ${col},0 0 ${glowPx*2}px ${pct>=1?'rgba(212,175,55,0.25)':'rgba(201,160,220,0.22)'}`;}
 }
 
 // ─────────────────── DRAGGABLE PROTEIN RING ───────────────────
@@ -1775,6 +1891,129 @@ function attachProteinDrag(svgEl){
   svgEl.addEventListener('touchstart',e=>{e.preventDefault();dragging=true;lastInt=-1;prevG=ldP().g;onMove(e.touches[0]);},{passive:false});
   svgEl.addEventListener('touchmove',e=>{e.preventDefault();if(dragging)onMove(e.touches[0]);},{passive:false});
   svgEl.addEventListener('touchend',()=>{dragging=false;},{passive:true});
+}
+
+// ═══════════════════ ARCHIVES (Export/Restore) ═══════════════════
+function exportArchive(){
+  try{
+    const data={};
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      data[k]=localStorage.getItem(k);
+    }
+    // btoa + encodeURIComponent handles unicode characters safely
+    const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(encoded)
+        .then(()=>showToast('Archive Copied to Clipboard'))
+        .catch(()=>{prompt('Copy this archive string:',encoded);});
+    }else{
+      // Fallback for older iOS
+      prompt('Copy this archive string:',encoded);
+    }
+  }catch(e){showToast('Export failed — try again');}
+}
+function restoreArchive(){
+  const raw=prompt('Paste your Archive string here to restore all data:');
+  if(!raw||!raw.trim()){return;}
+  try{
+    const decoded=decodeURIComponent(escape(atob(raw.trim())));
+    const parsed=JSON.parse(decoded);
+    if(typeof parsed!=='object'||Array.isArray(parsed)||!parsed)throw new Error('Not a valid archive object');
+    Object.keys(parsed).forEach(k=>{
+      if(parsed[k]!==null&&parsed[k]!==undefined)localStorage.setItem(k,parsed[k]);
+    });
+    showToast('Archive Restored — reloading…');
+    setTimeout(()=>window.location.reload(),1400);
+  }catch(e){
+    showToast('Invalid archive — check the string and retry');
+  }
+}
+function showToast(msg){
+  let t=document.getElementById('archToast');
+  if(!t){t=document.createElement('div');t.id='archToast';document.body.appendChild(t);}
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._hideT);
+  t._hideT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ═══════════════════ STAINED GLASS LEDGER (90-day) ═══════════════════
+function renderLedger90(){
+  const d=ld();
+  const today=new Date();today.setHours(0,0,0,0);
+  // Build array of the last 90 days (oldest → today)
+  const rawDays=[];
+  for(let i=89;i>=0;i--){const dt=new Date(today);dt.setDate(dt.getDate()-i);rawDays.push(dt);}
+  // Pad start to Monday boundary
+  const firstDow=rawDays[0].getDay();// 0=Sun
+  const padStart=firstDow===0?6:firstDow-1;
+  const paddedDays=[];
+  for(let i=0;i<padStart;i++)paddedDays.push(null);
+  paddedDays.push(...rawDays);
+  // Chunk into weeks
+  const weeks=[];
+  for(let i=0;i<paddedDays.length;i+=7)weeks.push(paddedDays.slice(i,i+7));
+  const dayLetters=['M','T','W','T','F','S','S'];
+  let h=`<div style="padding:12px 16px 14px;border-bottom:1px solid rgba(201,160,220,0.06)">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(150,142,152,0.38);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+      <span>Stained Glass Ledger</span><span style="font-size:8px;letter-spacing:.8px;color:rgba(150,142,152,0.24)">90 days</span>
+    </div>
+    <div style="display:flex;gap:2px;margin-bottom:4px;max-width:${weeks.length*13}px">
+      ${dayLetters.map(l=>`<div style="width:11px;font-size:7px;text-align:center;color:rgba(150,142,152,0.28);font-weight:700;flex-shrink:0">${l}</div>`).join('')}
+    </div>
+    <div class="ledger-scroll"><div class="ledger-grid">`;
+  weeks.forEach(wk=>{
+    h+=`<div class="ledger-week">`;
+    for(let di=0;di<7;di++){
+      const dt=wk[di];
+      if(!dt){h+=`<div class="ledger-cell lc-0" style="opacity:0"></div>`;continue;}
+      const ds=dt.toISOString().slice(0,10);
+      // dow: 1=Mon→DAYS[0], 2=Tue→DAYS[1], ... 0=Sun→DAYS[6 but only 0-5 in gym]
+      const dow=dt.getDay();
+      const dayIdx=dow===0?6:dow-1;
+      const dayObj=DAYS[dayIdx];
+      const sessions=dayObj?(d[dayObj.id]||[]).filter(s=>s.date?.slice(0,10)===ds):[];
+      const hasSession=sessions.length>0;
+      const hasEx=sessions[0]?.exercises?.length>0;
+      const isDlSess=sessions[0]?.deload;
+      const isFuture=dt>today;
+      const isToday=dt.getTime()===today.getTime();
+      let cls='lc-0';
+      if(!isFuture){
+        if(isDlSess&&hasSession)cls='lc-dl';
+        else if(hasEx)cls='lc-2';
+        else if(hasSession)cls='lc-1';
+      }
+      const titleStr=dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+      h+=`<div class="ledger-cell ${cls}" title="${titleStr}"${isToday?' style="outline:1px solid rgba(201,160,220,0.65);outline-offset:1px"':''}></div>`;
+    }
+    h+=`</div>`;
+  });
+  h+=`</div></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:7px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:3px"><div class="ledger-cell lc-0" style="flex-shrink:0"></div><span style="font-size:8px;color:rgba(150,142,152,0.38)">None</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div class="ledger-cell lc-1" style="flex-shrink:0"></div><span style="font-size:8px;color:rgba(150,142,152,0.38)">Partial</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div class="ledger-cell lc-2" style="flex-shrink:0"></div><span style="font-size:8px;color:rgba(150,142,152,0.38)">Full Session</span></div>
+      <div style="display:flex;align-items:center;gap:3px"><div class="ledger-cell lc-dl" style="flex-shrink:0"></div><span style="font-size:8px;color:rgba(150,142,152,0.38)">Deload</span></div>
+    </div>
+  </div>`;
+  return h;
+}
+
+// ═══════════════════ ANAMORPHIC PR FLARE ═══════════════════
+function triggerPRFlare(){
+  // Premium double haptic pulse
+  if(navigator.vibrate)navigator.vibrate([100,50,100]);
+  const overlay=document.getElementById('prFlareOverlay');
+  if(!overlay)return;
+  overlay.classList.remove('active');
+  void overlay.offsetWidth; // force reflow to restart animation
+  overlay.style.opacity='1';
+  overlay.classList.add('active');
+  overlay.addEventListener('animationend',()=>{
+    overlay.style.opacity='0';
+    overlay.classList.remove('active');
+  },{once:true});
 }
 
 // ═══════════════════ CLOSE MODAL ═══════════════════
